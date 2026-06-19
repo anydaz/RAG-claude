@@ -1,104 +1,112 @@
-'use client'
+"use client";
 
-import { useCallback, useState } from 'react'
-import ChatContainer, { type Message } from '@/components/ChatContainer'
-import ChatInput from '@/components/ChatInput'
-import CapybaraIcon from '@/components/CapybaraIcon'
-import ThemeToggle from '@/components/ThemeToggle'
-import { useTypewriter } from '@/hooks/useTypewriter'
+import { useCallback, useState } from "react";
+import ChatContainer, { type Message } from "@/components/ChatContainer";
+import ChatInput from "@/components/ChatInput";
+import CapybaraIcon from "@/components/CapybaraIcon";
+import ThemeToggle from "@/components/ThemeToggle";
+import { useTypewriter } from "@/hooks/useTypewriter";
 
 export default function Home() {
-  const [threadId] = useState(() => crypto.randomUUID())
-  const [messages, setMessages] = useState<Message[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [threadId] = useState(() => crypto.randomUUID());
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const updateMessage = useCallback((id: string, text: string) => {
     setMessages((prev) =>
-      prev.map((msg) => (msg.id === id ? { ...msg, content: text } : msg))
-    )
-  }, [])
+      prev.map((msg) => (msg.id === id ? { ...msg, content: text } : msg)),
+    );
+  }, []);
 
-  const { start, push, finish, flush } = useTypewriter(updateMessage)
+  const { start, push, finish, flush } = useTypewriter(updateMessage);
 
   const handleSend = async (text: string) => {
     const userMessage: Message = {
       id: crypto.randomUUID(),
-      role: 'user',
+      role: "user",
       content: text,
       timestamp: new Date(),
-    }
+    };
 
-    setMessages((prev) => [...prev, userMessage])
-    setIsLoading(true)
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
 
-    const assistantId = crypto.randomUUID()
+    const assistantId = crypto.randomUUID();
 
     try {
-      const res = await fetch('http://localhost:8000/chat/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, thread_id: threadId }),
-      })
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/chat/stream`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, thread_id: threadId }),
+        },
+      );
 
-      if (!res.ok) throw new Error(`Server error: ${res.status}`)
-      if (!res.body) throw new Error('No response body')
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      if (!res.body) throw new Error("No response body");
 
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let sseBuffer = ''
-      let started = false
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let sseBuffer = "";
+      let started = false;
 
       while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
+        const { done, value } = await reader.read();
+        if (done) break;
 
-        sseBuffer += decoder.decode(value, { stream: true })
-        const lines = sseBuffer.split('\n')
-        sseBuffer = lines.pop() ?? ''
+        sseBuffer += decoder.decode(value, { stream: true });
+        const lines = sseBuffer.split("\n");
+        sseBuffer = lines.pop() ?? "";
 
         for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          const payload = line.slice(6)
-          if (payload === '[DONE]') break
+          if (!line.startsWith("data: ")) continue;
+          const payload = line.slice(6);
+          if (payload === "[DONE]") break;
 
-          let chunk: string
+          let chunk: string;
           try {
-            chunk = JSON.parse(payload)
+            chunk = JSON.parse(payload);
           } catch {
-            continue
+            continue;
           }
 
           if (!started) {
-            started = true
-            setIsLoading(false)
+            started = true;
+            setIsLoading(false);
             setMessages((prev) => [
               ...prev,
-              { id: assistantId, role: 'assistant', content: '', timestamp: new Date() },
-            ])
-            start(assistantId)
+              {
+                id: assistantId,
+                role: "assistant",
+                content: "",
+                timestamp: new Date(),
+              },
+            ]);
+            start(assistantId);
           }
 
-          push(chunk)
+          push(chunk);
         }
       }
 
-      finish()
+      finish();
     } catch (err) {
-      flush()
-      setIsLoading(false)
+      flush();
+      setIsLoading(false);
       setMessages((prev) => [
         ...prev,
         {
           id: assistantId,
-          role: 'assistant',
-          content: `I encountered an error: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`,
+          role: "assistant",
+          content: `I encountered an error: ${err instanceof Error ? err.message : "Unknown error"}. Please try again.`,
           timestamp: new Date(),
         },
-      ])
+      ]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-[#f0f4f9] dark:bg-[#131314]">
@@ -112,9 +120,12 @@ export default function Home() {
         <ThemeToggle />
       </header>
 
-      <ChatContainer messages={messages} isLoading={isLoading} onSuggestion={handleSend} />
+      <ChatContainer
+        messages={messages}
+        isLoading={isLoading}
+        onSuggestion={handleSend}
+      />
       <ChatInput onSend={handleSend} disabled={isLoading} />
     </div>
-  )
+  );
 }
-
