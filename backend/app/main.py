@@ -9,7 +9,7 @@ from app.controllers.chat_controller import router as chat_router
 from app.controllers.calendar_controller import router as calendar_router
 from app.tasks.token_refresh_task import refresh_calendar_token
 
-app = FastAPI(title="Professional Assistant API")
+app = FastAPI(title="Professional Assistant API", root_path="/api")
 
 app.add_middleware(
     CORSMiddleware,
