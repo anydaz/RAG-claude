@@ -40,7 +40,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
   return (
     <div className="px-4 pb-6 pt-2">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-end gap-3 rounded-3xl bg-white dark:bg-[#1e1f20] px-5 py-3.5 shadow-md focus-within:shadow-lg transition-shadow">
+        <div className="flex items-center gap-3 rounded-3xl bg-white dark:bg-[#1e1f20] px-5 py-3.5 shadow-md focus-within:shadow-lg transition-shadow">
           <textarea
             ref={textareaRef}
             value={value}

@@ -21,7 +21,7 @@ const SUGGESTIONS = [
   { icon: '💼', text: 'What is your professional background?' },
   { icon: '🚀', text: 'Tell me about your most recent role.' },
   { icon: '⚙️', text: 'What technical skills do you have?' },
-  { icon: '🏗️', text: 'Describe a challenging project you worked on.' },
+  { icon: '📅', text: 'Arrange a meeting on my schedule.' },
 ]
 
 
