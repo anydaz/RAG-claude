@@ -32,6 +32,9 @@ class CalendarRepository:
 
         if creds.expired and creds.refresh_token:
             creds.refresh(Request())
+            # Save refreshed token back to file
+            with open(TOKEN_PATH, "w") as token_file:
+                token_file.write(creds.to_json())
 
         if not creds.valid:
             raise ValueError(
