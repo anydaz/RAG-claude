@@ -1,39 +1,43 @@
-'use client'
+"use client";
 
-import { useEffect, useRef } from 'react'
-import ChatMessage from '@/components/ChatMessage'
-import LoadingIndicator from '@/components/LoadingIndicator'
+import { useEffect, useRef } from "react";
+import ChatMessage from "@/components/ChatMessage";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 export type Message = {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: Date
-}
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+};
 
 interface ChatContainerProps {
-  messages: Message[]
-  isLoading: boolean
-  onSuggestion: (text: string) => void
+  messages: Message[];
+  isLoading: boolean;
+  onSuggestion: (text: string) => void;
 }
 
 const SUGGESTIONS = [
-  { icon: '💼', text: 'What is your professional background?' },
-  { icon: '🚀', text: 'Tell me about your most recent role.' },
-  { icon: '⚙️', text: 'What technical skills do you have?' },
-  { icon: '📅', text: 'Arrange a meeting on my schedule.' },
-]
+  { icon: "💼", text: "What is your professional background?" },
+  { icon: "🚀", text: "Tell me about your most recent role." },
+  { icon: "⚙️", text: "What technical skills do you have?" },
+  { icon: "📅", text: "Arrange a meeting on my schedule." },
+];
 
-
-function WelcomeScreen({ onSuggestion }: { onSuggestion: (text: string) => void }) {
+function WelcomeScreen({
+  onSuggestion,
+}: {
+  onSuggestion: (text: string) => void;
+}) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-10 px-4 pb-10">
       <div className="text-center">
         <h1 className="text-4xl font-semibold bg-gradient-to-r from-[#6B4822] via-[#B8824D] to-[#D4A86A] bg-clip-text text-transparent pb-1">
           Hello there
         </h1>
-        <p className="mt-2 text-xl text-slate-500 dark:text-slate-400 font-light">
-          How can I help you today?
+        <p className="mt-2 text-base text-slate-500 dark:text-slate-400 font-light max-w-sm">
+          Ask about professional background, skills, and experience — or
+          schedule a meetings.
         </p>
       </div>
 
@@ -52,15 +56,19 @@ function WelcomeScreen({ onSuggestion }: { onSuggestion: (text: string) => void 
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default function ChatContainer({ messages, isLoading, onSuggestion }: ChatContainerProps) {
-  const bottomRef = useRef<HTMLDivElement>(null)
+export default function ChatContainer({
+  messages,
+  isLoading,
+  onSuggestion,
+}: ChatContainerProps) {
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isLoading])
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -81,5 +89,5 @@ export default function ChatContainer({ messages, isLoading, onSuggestion }: Cha
         </div>
       )}
     </div>
-  )
+  );
 }
