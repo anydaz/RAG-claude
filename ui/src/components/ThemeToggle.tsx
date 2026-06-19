@@ -3,24 +3,29 @@
 import { useState } from "react";
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(
-    localStorage.getItem("theme") === "dark",
-  );
+  const [state, setState] = useState(() => {
+    if (typeof window === "undefined") {
+      return { isDark: true, mounted: false };
+    }
+    return { isDark: localStorage.getItem("theme") === "dark", mounted: true };
+  });
 
   const toggle = () => {
-    const next = !isDark;
-    setIsDark(next);
+    const next = !state.isDark;
+    setState((prev) => ({ ...prev, isDark: next }));
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
   };
 
+  if (!state.mounted) return null;
+
   return (
     <button
       onClick={toggle}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={state.isDark ? "Switch to light mode" : "Switch to dark mode"}
       className="w-9 h-9 flex items-center justify-center rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#28292a] transition-all duration-150"
     >
-      {isDark ? <SunIcon /> : <MoonIcon />}
+      {state.isDark ? <SunIcon /> : <MoonIcon />}
     </button>
   );
 }

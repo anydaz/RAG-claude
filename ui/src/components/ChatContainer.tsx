@@ -29,7 +29,7 @@ function WelcomeScreen({ onSuggestion }: { onSuggestion: (text: string) => void 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-10 px-4 pb-10">
       <div className="text-center">
-        <h1 className="text-4xl font-semibold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent pb-1">
+        <h1 className="text-4xl font-semibold bg-gradient-to-r from-[#6B4822] via-[#B8824D] to-[#D4A86A] bg-clip-text text-transparent pb-1">
           Hello there
         </h1>
         <p className="mt-2 text-xl text-slate-500 dark:text-slate-400 font-light">
