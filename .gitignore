@@ -5,6 +5,8 @@ backend/**/__pycache__/
 backend/*.pyc
 backend/chroma_db/
 backend/.env
+backend/credentials.json
+backend/token.json
 
 # Node
 ui/node_modules/

@@ -3,10 +3,12 @@
 import { useCallback, useState } from 'react'
 import ChatContainer, { type Message } from '@/components/ChatContainer'
 import ChatInput from '@/components/ChatInput'
+import CapybaraIcon from '@/components/CapybaraIcon'
 import ThemeToggle from '@/components/ThemeToggle'
 import { useTypewriter } from '@/hooks/useTypewriter'
 
 export default function Home() {
+  const [threadId] = useState(() => crypto.randomUUID())
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
@@ -35,7 +37,7 @@ export default function Home() {
       const res = await fetch('http://localhost:8000/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, thread_id: threadId }),
       })
 
       if (!res.ok) throw new Error(`Server error: ${res.status}`)
@@ -99,23 +101,13 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 dark:bg-zinc-950">
-      <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-3.5 border-b border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight">
-              Professional Assistant
-            </h1>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[11px] text-slate-400 dark:text-slate-500">Online</span>
-            </div>
-          </div>
+    <div className="flex flex-col h-screen bg-[#f0f4f9] dark:bg-[#131314]">
+      <header className="flex items-center justify-between px-6 py-3">
+        <div className="flex items-center gap-2">
+          <CapybaraIcon className="w-7 h-7" />
+          <span className="text-lg font-medium text-slate-800 dark:text-slate-100 tracking-tight">
+            Assistant
+          </span>
         </div>
         <ThemeToggle />
       </header>
@@ -125,3 +117,4 @@ export default function Home() {
     </div>
   )
 }
+

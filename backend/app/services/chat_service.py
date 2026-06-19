@@ -17,11 +17,14 @@ class ChatService:
             if os.path.isdir(data_path):
                 self._rag_service.ingest_from_path(data_path)
 
-    def chat(self, message: str) -> str:
-        return self._chat_agent.run(message)
+    def chat(self, message: str, thread_id: str) -> str:
+        return self._chat_agent.run(message, thread_id)
 
-    def stream_chat(self, message: str) -> Generator[str, None, None]:
-        return self._chat_agent.stream_run(message)
+    def stream_chat(self, message: str, thread_id: str) -> Generator[str, None, None]:
+        return self._chat_agent.stream_run(message, thread_id)
+
+    def get_graph_image(self) -> bytes:
+        return self._chat_agent.get_graph_image()
 
     def ingest(self) -> int:
         data_path = os.getenv("DATA_PATH", "../data")
