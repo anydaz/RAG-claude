@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import Link from "next/link";
 import ChatContainer, { type Message } from "@/components/ChatContainer";
 import ChatInput from "@/components/ChatInput";
 import CapybaraIcon from "@/components/CapybaraIcon";
@@ -117,7 +118,15 @@ export default function Home() {
             Assistant
           </span>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-4">
+          <Link
+            href="/portfolio"
+            className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
+          >
+            Portfolio
+          </Link>
+          <ThemeToggle />
+        </div>
       </header>
 
       <ChatContainer
