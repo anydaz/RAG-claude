@@ -161,10 +161,6 @@ export const portfolioProjects: PortfolioProject[] = [
         src: "/portofolio/personal-rag/rag-2.png",
         alt: "Personal RAG screenshot 2",
       },
-      {
-        src: "/portofolio/personal-rag/rag-3.png",
-        alt: "Personal RAG screenshot 3",
-      },
     ],
   },
   {
