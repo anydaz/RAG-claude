@@ -146,7 +146,7 @@ export const portfolioProjects: PortfolioProject[] = [
     ],
   },
   {
-    slug: "personal rag",
+    slug: "personal-rag",
     title: "Personal RAG Application",
     role: "Fullstack Engineer",
     summary:
@@ -158,11 +158,11 @@ export const portfolioProjects: PortfolioProject[] = [
         alt: "Personal RAG screenshot 1",
       },
       {
-        src: "/portofolio/happy5-web/rag-2.png",
+        src: "/portofolio/personal-rag/rag-2.png",
         alt: "Personal RAG screenshot 2",
       },
       {
-        src: "/portofolio/happy5-web/rag-3.png",
+        src: "/portofolio/personal-rag/rag-3.png",
         alt: "Personal RAG screenshot 3",
       },
     ],
