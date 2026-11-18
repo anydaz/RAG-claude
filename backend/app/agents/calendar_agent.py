@@ -3,12 +3,11 @@ from typing import List
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import ToolMessage
 from langchain_google_community.calendar.toolkit import CalendarToolkit
 from langchain_google_community.calendar.utils import build_calendar_service
 
-MODEL = "claude-sonnet-4-6"
+from app.llm import build_llm, to_lc_messages
 
 _BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _TOKEN_PATH = os.path.join(_BACKEND_DIR, "token.json")
@@ -20,7 +19,7 @@ class CalendarAgent:
         self._llm = None
         self._tool_map: dict = {}
 
-    def _build_llm(self) -> ChatAnthropic:
+    def _build_llm(self):
         creds = None
         if os.path.exists(_TOKEN_PATH):
             creds = Credentials.from_authorized_user_file(_TOKEN_PATH, _CALENDAR_SCOPES)
@@ -31,9 +30,9 @@ class CalendarAgent:
         toolkit = CalendarToolkit(api_resource=api_resource)
         tools = toolkit.get_tools()
         self._tool_map = {t.name: t for t in tools}
-        return ChatAnthropic(model=MODEL).bind_tools(tools)
+        return build_llm().bind_tools(tools)
 
-    def _get_llm(self) -> ChatAnthropic:
+    def _get_llm(self):
         if self._llm is None:
             self._llm = self._build_llm()
         return self._llm
@@ -41,12 +40,7 @@ class CalendarAgent:
     def run(self, messages: List[dict]) -> str:
         llm = self._get_llm()
 
-        lc_messages = []
-        for m in messages:
-            if m["role"] == "user":
-                lc_messages.append(HumanMessage(content=m["content"]))
-            else:
-                lc_messages.append(AIMessage(content=m["content"]))
+        lc_messages = to_lc_messages(messages)
 
         while True:
             response = llm.invoke(lc_messages)

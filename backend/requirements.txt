@@ -12,3 +12,4 @@ anthropic>=0.25.0
 google-api-python-client>=2.100.0
 langchain-google-community[calendar]>=2.0.0
 apscheduler>=3.10.0
+langchain-openai>=0.1.0

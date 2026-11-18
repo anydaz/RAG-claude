@@ -3,24 +3,24 @@ import operator
 from datetime import date
 from typing import Annotated, Generator, List, TypedDict
 
-import anthropic
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
 from app.agents.calendar_agent import CalendarAgent
+from app.llm import build_llm, to_lc_messages
 from app.services.rag_service import RAGService
-
-MODEL = "claude-sonnet-4-6"
 
 RAG_SYSTEM_PROMPT = """You are a professional assistant representing a job candidate. Answer questions about their professional background, work experience, technical skills, past projects, and career based solely on the provided context.
 
 If the answer is not in the context, say so honestly. Keep answers concise and professional.
 
+Today's date: {today}. Use this date for any question about the current date, or about durations such as years or months of experience at a role.
+
 Context:
 {context}"""
 
 CLASSIFY_PROMPT = """You classify the intent of a user message in a professional chatbot. The chatbot can:
-1. Answer questions about a person's professional background, work experience, skills, and projects ("rag")
+1. Answer questions about a person's professional background, work experience, skills, projects, and questions about today's date ("rag")
 2. Schedule, search, update, or manage calendar events / meetings ("calendar")
 3. Reject off-topic requests ("out_of_scope")
 
@@ -48,7 +48,7 @@ class AgentState(TypedDict):
 class ChatAgent:
     def __init__(self, rag_service: RAGService):
         self._rag = rag_service
-        self._anthropic = anthropic.Anthropic()
+        self._llm = build_llm()
         self._checkpointer = MemorySaver()
         self._calendar_agent = CalendarAgent()
         self._graph = self._build_graph()
@@ -79,12 +79,8 @@ class ChatAgent:
         return "\n".join(f"{m['role'].capitalize()}: {m['content']}" for m in messages)
 
     def _llm_json(self, prompt: str) -> dict:
-        msg = self._anthropic.messages.create(
-            model=MODEL,
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = msg.content[0].text.strip()
+        msg = self._llm.invoke(to_lc_messages([{"role": "user", "content": prompt}]))
+        text = msg.content.strip()
         if text.startswith("```"):
             text = text.split("```")[1]
             if text.startswith("json"):
@@ -124,11 +120,9 @@ class ChatAgent:
 
     def _generation_node(self, state: AgentState) -> AgentState:
         context = "\n\n".join(state["retrieved_docs"]) if state["retrieved_docs"] else "No relevant context found."
-        system = RAG_SYSTEM_PROMPT.format(context=context)
-        msg = self._anthropic.messages.create(
-            model=MODEL, max_tokens=1024, system=system, messages=state["messages"]
-        )
-        response = msg.content[0].text if msg.content else "I could not generate a response."
+        system = RAG_SYSTEM_PROMPT.format(context=context, today=date.today().isoformat())
+        msg = self._llm.invoke(to_lc_messages(state["messages"], system=system))
+        response = msg.content or "I could not generate a response."
         return {**state, "response": response}
 
     # ── routing ───────────────────────────────────────────────────────────────
@@ -204,17 +198,12 @@ class ChatAgent:
         # RAG — stream tokens
         state = self._retrieval_node(state)
         context = "\n\n".join(state["retrieved_docs"]) if state["retrieved_docs"] else "No relevant context found."
-        system = RAG_SYSTEM_PROMPT.format(context=context)
+        system = RAG_SYSTEM_PROMPT.format(context=context, today=date.today().isoformat())
 
         full_response = ""
-        with self._anthropic.messages.stream(
-            model=MODEL,
-            max_tokens=1024,
-            system=system,
-            messages=state["messages"],
-        ) as stream:
-            for text in stream.text_stream:
-                full_response += text
-                yield text
+        for chunk in self._llm.stream(to_lc_messages(state["messages"], system=system)):
+            if chunk.content:
+                full_response += chunk.content
+                yield chunk.content
 
         self._save_turn(thread_id, query, full_response)
